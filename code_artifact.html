@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пойдем гулять?</title>
+    <!-- Подключаем стили Tailwind CSS для красивого дизайна -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Добавим немного собственных анимаций */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            /* Красивый анимированный градиентный фон */
+            background: linear-gradient(-45deg, #ff9a9e, #fecfef, #a18cd1, #fbc2eb);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Главный контейнер (Карточка) -->
+    <div class="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl p-8 max-w-md w-full text-center transform transition-all duration-500 hover:scale-[1.02]">
+        
+        <!-- Шаг 1: Вопрос -->
+        <div id="step1" class="fade-in">
+            <div class="text-6xl mb-4">🤔</div>
+            <h1 class="text-3xl font-black text-gray-800 mb-8 leading-tight">
+                Ты пойдешь <br> гулять?
+            </h1>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <!-- Кнопка ДА -->
+                <button onclick="handleAnswer('yes')" 
+                        class="px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold rounded-2xl shadow-lg shadow-green-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-lg">
+                    Да! 🥰
+                </button>
+                
+                <!-- Кнопка НЕТ -->
+                <button onclick="handleAnswer('no')" 
+                        class="px-8 py-4 bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 font-bold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 hover:bg-gray-400 transition-all duration-200 text-lg">
+                    Нет 😒
+                </button>
+            </div>
+        </div>
+
+        <!-- Шаг 2: Выбор времени (Скрыт по умолчанию) -->
+        <div id="step2" class="hidden">
+            <div id="emoji-container" class="text-6xl mb-4">✨</div>
+            <h2 id="response-title" class="text-2xl font-bold text-gray-800 mb-6">
+                <!-- Текст появится здесь через JavaScript -->
+            </h2>
+            
+            <!-- Форма для отправки данных на email через FormSubmit -->
+            <form action="https://formsubmit.co/bazylevdanik7@gmail.com" method="POST" class="flex flex-col gap-4 text-left">
+                
+                <!-- Скрытые настройки для формы -->
+                <input type="hidden" name="_subject" value="Новое свидание/прогулка!">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="Ответ_пользователя" id="user-choice-input" value="">
+                
+                <!-- Выбор даты -->
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2 text-sm" for="date">Выбери дату:</label>
+                    <input type="date" id="date" name="Дата" required
+                           class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-0 outline-none transition-colors text-gray-700 bg-white/50">
+                </div>
+                
+                <!-- Выбор времени -->
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2 text-sm" for="time">Выбери время:</label>
+                    <input type="time" id="time" name="Время" required
+                           class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-0 outline-none transition-colors text-gray-700 bg-white/50">
+                </div>
+                
+                <!-- Кнопка отправки -->
+                <button type="submit" 
+                        class="mt-4 w-full px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-lg">
+                    Отправить 💌
+                </button>
+            </form>
+            
+            <button onclick="goBack()" class="mt-4 text-gray-400 hover:text-gray-600 text-sm underline decoration-dotted">
+                Назад
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Элементы страницы
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const responseTitle = document.getElementById('response-title');
+        const emojiContainer = document.getElementById('emoji-container');
+        const userChoiceInput = document.getElementById('user-choice-input');
+
+        // Ограничение даты (нельзя выбрать прошедшие дни)
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('min', today);
+
+        // Логика нажатия на кнопки
+        function handleAnswer(answer) {
+            // Прячем первый шаг
+            step1.classList.add('hidden');
+            step1.classList.remove('fade-in');
+            
+            // Показываем второй шаг
+            step2.classList.remove('hidden');
+            step2.classList.add('fade-in');
+
+            if (answer === 'yes') {
+                responseTitle.innerHTML = 'Ура! 🎉<br>Выбирай дату и время:';
+                emojiContainer.innerHTML = '🥰';
+                userChoiceInput.value = 'Нажал(а) ДА';
+            } else {
+                responseTitle.innerHTML = 'А тебя никто и не спрашивал 😈<br>Выбирай дату и время:';
+                emojiContainer.innerHTML = '💅';
+                userChoiceInput.value = 'Нажал(а) НЕТ (но был(а) заставлен(а))';
+            }
+        }
+
+        // Кнопка возврата назад (на всякий случай)
+        function goBack() {
+            step2.classList.add('hidden');
+            step2.classList.remove('fade-in');
+            
+            step1.classList.remove('hidden');
+            step1.classList.add('fade-in');
+        }
+    </script>
+</body>
+</html>
